@@ -6,9 +6,9 @@ import yaml
 with open("hist1.yaml", "r") as yaml_file:
     hist = yaml.load(yaml_file)
 
-### zeige trainingsverlauf verlauf als grafik
+### zeige trainingsverlauf als grafik
 for label in hist.keys():
-    plt.plot(hist[label],label=label) # alle (beide) werte plotten
+    plt.plot(hist[label],label=label) # alle werte plotten
 plt.xlabel("epochs")
 plt.legend()
 plt.title("The final val_loss={:4.3f}".format(hist["val_loss"][-1])) # letzter wert im array = [-1]
