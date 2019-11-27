@@ -10,7 +10,7 @@ from keras.layers import Conv2D, Activation, MaxPooling2D, Dense, Flatten
 from keras.preprocessing.image import img_to_array, load_img
 
 # Anzahl Durchläufe
-epochs = 300
+epochs = 200
 
 # Trainingsdaten und Bilder aus CSV laden
 imgs = []
