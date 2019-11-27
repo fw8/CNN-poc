@@ -12,19 +12,22 @@ from keras.preprocessing.image import img_to_array, load_img
 # Anzahl Durchläufe
 epochs = 300
 
-
-# Trainingsdaten aus CSV laden
-train_results = np.loadtxt(open("data/train/annotations.csv", "rb"), delimiter=";", skiprows=1, usecols = (1,2,3,4,5,6,7,8,9,10))
-
-num_lines = train_results.shape[0] # wie viele Zeilen hat das CSV?
-
-train_input = np.array([])
+# Trainingsdaten und Bilder aus CSV laden
 imgs = []
-for i in range(num_lines): # jede Zeile ist ein Image -> einlesen
-    img = img_to_array(load_img("data/train/image_"+str(i+1)+".jpg"))/255 # pixel 0-255 -> 0.0 - 1.0
-    imgs.append(img)
+train_results = []
+with open('data/train/annotations.csv') as f:
+    next(f)
+    for i, line in enumerate(f):
+        filename = line.split(';')[0] # erste Spalte (0) = Dateinamen
+        data = line.split(';')[1:] # restliche Spalten (1,2,3,..) = Markierungspunkte
+        data = np.asarray(data,dtype=np.float) # array in numpy float array konvertieren
+
+        img = img_to_array(load_img("data/train/"+filename))/255 #Pixel 0-255 -> 0.0-1.0
+        imgs.append(img)
+        train_results.append(data)
 
 train_input = np.array(imgs) # numpy array daraus machen...
+train_results = np.array(train_results)
 
 print (train_input.shape) # Input für das Netz
 # (n, 90, 90, 3) => n Bilder mit je 90x90 Pixel x 3 (RGB)
@@ -34,37 +37,36 @@ print (train_results.shape) # Referenzpunkte die gelernt werden sollen
 
 
 # Normalisieren der Ergenbisswerte
+mean_results = np.mean(train_results, axis=0) # Mittelwert als neue Null-Linie
+std_results = np.std(train_results, axis=0) # Standartabweichung als Skalierungsfaktor (-1,+1)
 
-mY = np.mean(train_results, axis=0) # Mittelwert als neue Null-Linie
-sdY = np.std(train_results, axis=0) # Standartabweichung als Skalierungsfaktor (-1,+1)
 
-def standy(x, printTF=False):
-    if printTF:
-        print("Range in original scale: [{:5.3f},{:5.3f})".format(
-            np.min(x), np.max(x)))
-    x = (x - mY)/sdY
-    if printTF:
-        print("Range in standardized scale: [{:5.3f},{:5.3f})".format(
-            np.min(x), np.max(x)))
+def normalize(x, show=False):
+    if show:
+        print("Range in original scale: [{:5.3f},{:5.3f})".format(np.min(x), np.max(x)))
+    x = (x - mean_results)/std_results
+    if show:
+        print("Range in standardized scale: [{:5.3f},{:5.3f})".format(np.min(x), np.max(x)))
     return(x)
 
-train_results = standy(train_results,True) # normaliseren
+train_results = normalize(train_results,True) # normaliseren
 
 
 
 ### Jetzt das Netz bauen
 
 batch_size = 64
-num_channels = 3 # RGB
+
+input_shape=train_input[0].shape
+result_size=train_results.shape[1]
 
 model = Sequential()
 
-#model.add(BatchNormalization(input_shape=(96, 96, 1)))
 model.add(Conv2D(24, 5, 5,
                  border_mode='same',
                  init="he_normal",
                  name="conv2d",
-                 input_shape=(90, 90) + (num_channels,)))
+                 input_shape=input_shape))
 
 model.add(Activation("relu"))
 model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding="valid"))
@@ -79,20 +81,17 @@ model.add(Activation("relu"))
 model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding="valid"))
 model.add(Conv2D(64, (3, 3)))
 model.add(Activation("relu"))
-#model.add(GlobalAveragePooling2D())
 model.add(Flatten())
 model.add(Dense(500, activation="relu"))
 model.add(Dense(90, activation="relu"))
-model.add(Dense(10))
+model.add(Dense(result_size))
 
 model.compile(optimizer="rmsprop", loss="mse", metrics=["accuracy"])
 model.summary()
 
+
 ### training...
 
-#checkpointer = ModelCheckpoint(filepath="cp_model2.h5", verbose=1, save_best_only=True)
-
-#hist = model.fit(train_input, train_results, validation_split=0.2, shuffle=True, epochs=epochs, batch_size=20, callbacks=[checkpointer], verbose=1)
 hist = model.fit(train_input, train_results, validation_split=0.2, shuffle=True, epochs=epochs, batch_size=20, verbose=1)
 
 
@@ -113,6 +112,6 @@ with open("hist1.yaml", "w") as yaml_file:
 model.save("model1.h5")
 
 # speichere normalisierung daten
-np.save('norm',[mY,sdY])
+np.save('norm',[mean_results,std_results])
 
 print("Saved model & training data to disk")

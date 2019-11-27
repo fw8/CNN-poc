@@ -12,17 +12,22 @@ model.summary()
 
 
 # lade test daten
-test_results = np.loadtxt(open("data/test/annotations.csv", "rb"), delimiter=";", skiprows=1, usecols = (1,2,3,4,5,6,7,8,9,10))
-
-num_lines = test_results.shape[0] # wie viele Zeilen hat das CSV?
-
-test_input = np.array([])
+# Trainingsdaten und Bilder aus CSV laden
 imgs = []
-for i in range(num_lines): # jede Zeile ist ein Image -> einlesen
-    img = img_to_array(load_img("data/test/image_"+str(i+1)+".jpg"))/255 # pixel 0-255 -> 0.0 - 1.0
-    imgs.append(img)
+test_results = []
+with open('data/test/annotations.csv') as f:
+    next(f)
+    for i, line in enumerate(f):
+        filename = line.split(';')[0] # erste Spalte (0) = Dateinamen
+        data = line.split(';')[1:] # restliche Spalten (1,2,3,..) = Markierungspunkte
+        data = np.asarray(data,dtype=np.float) # array in numpy float array konvertieren
+
+        img = img_to_array(load_img("data/test/"+filename))/255 #Pixel 0-255 -> 0.0-1.0
+        imgs.append(img)
+        test_results.append(data)
 
 test_input = np.array(imgs) # numpy array daraus machen...
+test_results = np.array(test_results)
 
 
 print (test_input.shape) # Input für das Netz
@@ -47,10 +52,10 @@ pred_results = model.predict(test_input)
 # der trainingsdaten
 norm = np.load('norm.npy',allow_pickle=True)
 mean_results = norm[0]
-sd_results = norm[1]
+std_results = norm[1]
 
 # normalisierung rückgängig machen...
-pred_results = pred_results * sd_results + mean_results
+pred_results = pred_results * std_results + mean_results
 
 
 
@@ -65,7 +70,7 @@ img = test_input[i]
 plt.imshow(img)
 
 # facial key points
-p1 = test_results[i] # Scale up [-1,+1] => [0,90]
+p1 = test_results[i]
 
 plt.scatter(p1[0],p1[1], c="red") # Rechtes Auge
 plt.scatter(p1[2],p1[3], c="green") # Linkes Auge
@@ -73,7 +78,7 @@ plt.scatter(p1[4],p1[5], c="blue") # Nase
 plt.scatter(p1[6],p1[7], c="yellow") # Rechter Mundwinckel
 plt.scatter(p1[8],p1[9], c="orange") # Linker Mundwinkel
 
-p1 = pred_results[i] # Scale up [-1,+1] => [0,90]
+p1 = pred_results[i]
 
 plt.scatter(p1[0],p1[1], c="red", marker='X') # Rechtes Auge
 plt.scatter(p1[2],p1[3], c="green", marker='X') # Linkes Auge
