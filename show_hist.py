@@ -1,10 +1,10 @@
 #!/usr/local/bin/python3
 import matplotlib.pyplot as plt
-import yaml
+import numpy as np
 
 # laden trainingsverlauf (loss,val_loss)
-with open("hist1.yaml", "r") as yaml_file:
-    hist = yaml.load(yaml_file)
+hist = np.load('hist1.npy',allow_pickle=True)
+hist = hist.item()
 
 ### zeige trainingsverlauf als grafik
 for label in hist.keys():

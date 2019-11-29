@@ -103,10 +103,8 @@ model_yaml = model.to_yaml()
 with open("model1.yaml", "w") as yaml_file:
     yaml_file.write(model_yaml)
 
-# speichere trainingsverlauf (loss,val_loss,..) als yaml file
-hist_yaml = yaml.dump(hist.history)
-with open("hist1.yaml", "w") as yaml_file:
-    yaml_file.write(hist_yaml)
+# speichere trainingsverlauf (loss,val_loss,..) als numpy file
+np.save("hist1",hist.history)
 
 # speichere modell und berechnete gewichte als HDFS
 model.save("model1.h5")
