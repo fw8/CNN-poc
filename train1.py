@@ -16,7 +16,7 @@ epochs = 200
 imgs = []
 train_results = []
 with open('data/train/annotations.csv') as f:
-    next(f)
+    next(f) # erste Zeile überspringen
     for i, line in enumerate(f):
         filename = line.split(';')[0] # erste Spalte (0) = Dateinamen
         data = line.split(';')[1:] # restliche Spalten (1,2,3,..) = Markierungspunkte
