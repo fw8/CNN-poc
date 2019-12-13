@@ -14,7 +14,7 @@ model.summary()
 # lade test daten
 # Trainingsdaten und Bilder aus CSV laden
 imgs = []
-test_results = []
+test_kps = []
 with open('data/test/annotations.csv') as f:
     next(f)
     for i, line in enumerate(f):
@@ -24,21 +24,21 @@ with open('data/test/annotations.csv') as f:
 
         img = img_to_array(load_img("data/test/"+filename))/255 #Pixel 0-255 -> 0.0-1.0
         imgs.append(img)
-        test_results.append(data)
+        test_kps.append(data)
 
 test_input = np.array(imgs) # numpy array daraus machen...
-test_results = np.array(test_results)
+test_kps = np.array(test_kps)
 
 
 print (test_input.shape) # Input für das Netz
 # (n, 90, 90, 3) => n Bilder mit je 90x90 x3(RGB)
 
-print (test_results.shape) # Referenz Werte gegen die das Netz antreten muss
+print (test_kps.shape) # Referenz Werte gegen die das Netz antreten muss
 # (n, 10) => Für jedes der n Bilder gibt es 5 Punkte = 10 Werte (2 Augen, 2 Mundwinkel, 1 Nase)
 
 
 # evaluate the model (noch nicht geguckt was hier genau gemacht wird...)
-score = model.evaluate(test_input, test_results, verbose=1)
+score = model.evaluate(test_input, test_kps, verbose=1)
 print (score)
 
 
@@ -70,7 +70,7 @@ img = test_input[i]
 plt.imshow(img)
 
 # facial key points
-p1 = test_results[i]
+p1 = test_kps[i]
 
 plt.scatter(p1[0],p1[1], c="red") # Rechtes Auge
 plt.scatter(p1[2],p1[3], c="green") # Linkes Auge
