@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3
 import numpy as np
-import cv2
 from keras.models import load_model
 from keras.preprocessing.image import img_to_array, load_img
 import matplotlib.pyplot as plt
@@ -63,9 +62,6 @@ pred_results = pred_results * std_results + mean_results
 i = 10
 
 img = test_input[i]
-#cv2.imshow("image", img)
-#cv2.waitKey(0)
-#cv2.destroyAllWindows()
 
 plt.imshow(img)
 
