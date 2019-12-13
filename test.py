@@ -6,7 +6,7 @@ from keras.preprocessing.image import img_to_array, load_img
 import matplotlib.pyplot as plt
 
 # lade fertiges modell und gewichte
-model = load_model('model1.h5')
+model = load_model('model.h5')
 # summarize model.
 model.summary()
 

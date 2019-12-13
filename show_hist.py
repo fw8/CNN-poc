@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # laden trainingsverlauf (loss,val_loss)
-hist = np.load('hist1.npy',allow_pickle=True)
+hist = np.load('hist.npy',allow_pickle=True)
 hist = hist.item()
 
 ### zeige trainingsverlauf als grafik
